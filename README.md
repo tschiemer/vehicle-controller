@@ -42,6 +42,20 @@ brew install libserialport
 sudo apt install libserialport0 libserialport-dev
 ```
 
+# Setup
+
+## Raspberry Pi
+
+To generate USB port specific serial port links add file `/etc/udev/rules.d/99-trinamic-motor.rules`
+```txt
+
+KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty", ATTRS{devpath}=="1.1", ATTRS{idVendor}=="2a3c", ATTRS{idProduct}=="0100", SYMLINK="ttyMotor1"
+KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty", ATTRS{devpath}=="1.2", ATTRS{idVendor}=="2a3c", ATTRS{idProduct}=="0100", SYMLINK="ttyMotor2"
+KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty", ATTRS{devpath}=="1.3", ATTRS{idVendor}=="2a3c", ATTRS{idProduct}=="0100", SYMLINK="ttyMotor3"
+KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty", ATTRS{devpath}=="1.4", ATTRS{idVendor}=="2a3c", ATTRS{idProduct}=="0100", SYMLINK="ttyMotor4"
+```
+and reboot (or run `sudo udevadm control --reload-rules && sudo udevadm trigger`).
+
 # License
 
 MIT License
