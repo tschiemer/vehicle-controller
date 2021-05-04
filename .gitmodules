@@ -1,0 +1,3 @@
+[submodule "src/third_party/oscpack"]
+	path = src/third_party/oscpack
+	url = https://github.com/MariadeAnton/oscpack
