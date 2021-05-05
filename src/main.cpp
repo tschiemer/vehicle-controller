@@ -114,12 +114,12 @@ int main(int argc, char * argv[])
 {
     argv0 = argv[0];
 
-    int c;
-    int digit_optind = 0;
-
     for(int i = 0; i < MAX_MOTORS; i++){
         opts.motors->address = DEFAULT_ADDRESS;
     }
+
+    int c;
+    int digit_optind = 0;
 
     while (1) {
         int this_option_optind = optind ? optind : 1;

@@ -37,7 +37,8 @@ class Motor {
     public:
         Motor(){}
         Motor(char portname[], uint8_t address){
-            m_portname = strdup(portname);
+            if (portname)
+                m_portname = strdup(portname);
             m_address = address;
             m_port = NULL;
         }
@@ -53,7 +54,11 @@ class Motor {
 
         const char * get_portname() { return m_portname; }
         void set_portname(char portname[]){
-            m_portname = strdup(portname);
+            if (m_portname)
+                free(m_portname);
+
+            if (portname)
+                m_portname = strdup(portname);
         }
 
         uint8_t get_address() { return m_address; }
