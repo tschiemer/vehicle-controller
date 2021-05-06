@@ -1,4 +1,4 @@
-#N canvas 1033 307 450 611 12;
+#N canvas 588 271 906 632 12;
 #X msg 67 60 connect 10.0.0.10 9292;
 #X msg 254 60 disconnect, f 11;
 #X floatatom 81 325 5 0 0 0 - - -;
@@ -8,17 +8,42 @@
 #X obj 81 389 oscformat -f ii /motor/rotate;
 #X msg 81 351 0 \$1;
 #X obj 81 129 vsl 15 128 0 127 0 0 empty empty empty 0 -9 0 10 -262144
--1 -1 6300 1;
+-1 -1 0 1;
 #X obj 81 269 - 63;
 #X obj 81 297 * 20;
 #X msg 81 103 63;
 #X floatatom 141 325 5 0 0 0 - - -;
 #X obj 141 129 vsl 15 128 0 127 0 0 empty empty empty 0 -9 0 10 -262144
--1 -1 6300 1;
+-1 -1 0 1;
 #X obj 141 269 - 63;
 #X obj 141 297 * 20;
 #X msg 141 103 63;
 #X msg 141 351 1 \$1;
+#X obj 545 164 hid;
+#X msg 547 72 list;
+#X msg 562 103 open joystick;
+#X msg 562 134 close;
+#X obj 545 203 route 1 9;
+#X floatatom 545 281 5 0 0 0 - - -;
+#X floatatom 546 302 5 0 0 0 - - -;
+#X floatatom 546 322 5 0 0 0 - - -;
+#X floatatom 546 343 5 0 0 0 - - -;
+#X floatatom 546 365 5 0 0 0 - - -;
+#X text 377 242 Generic controls (1);
+#X text 491 282 x (48);
+#X text 491 304 y (49);
+#X text 484 325 Rz (53);
+#X text 456 344 Slider (54);
+#X text 463 366 Wheel (56);
+#X floatatom 547 388 5 0 0 0 - - -;
+#X obj 545 243 route 48 49 53 54 56 57;
+#X text 427 390 Hat Switch (57);
+#X obj 624 360 print other_usage;
+#X obj 465 132 bng 15 250 50 0 empty empty empty 17 7 0 10 -262144
+-1 -1;
+#X obj 442 100 tgl 15 0 empty empty empty 17 7 0 10 -262144 -1 -1 1
+1;
+#X msg 464 100 poll \$1;
 #X connect 0 0 5 0;
 #X connect 1 0 5 0;
 #X connect 2 0 7 0;
@@ -36,3 +61,18 @@
 #X connect 15 0 12 0;
 #X connect 16 0 13 0;
 #X connect 17 0 6 0;
+#X connect 18 0 22 0;
+#X connect 19 0 18 0;
+#X connect 20 0 18 0;
+#X connect 21 0 18 0;
+#X connect 22 0 35 0;
+#X connect 35 0 23 0;
+#X connect 35 1 24 0;
+#X connect 35 2 25 0;
+#X connect 35 3 26 0;
+#X connect 35 4 27 0;
+#X connect 35 5 34 0;
+#X connect 35 6 37 0;
+#X connect 38 0 18 0;
+#X connect 39 0 40 0;
+#X connect 40 0 18 0;
