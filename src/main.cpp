@@ -22,6 +22,7 @@ static struct {
     struct {
         char * name;
         int address;
+        bool direction_right;
     } motors[MAX_MOTORS];
     int port;
 } opts {
@@ -38,7 +39,9 @@ static void print_usage(FILE * f){
             "Options:\n"
             "\t -p,--port <port>\t OSC server port (default %d)\n"
             "\t -a, --addr <motor-index>:<addr1>\n"
-            "\t\t\t Set address of given motor (default %d)\n",
+            "\t\t\t Set address of given motor (default %d)\n"
+            "\t -d, --dir <motor-index>:[l,r]\n"
+            "\t\t\t Set direction of given motor to turn left or right\n",
             argv0, MAX_MOTORS, DEFAULT_PORT, DEFAULT_ADDRESS);
 }
 
@@ -52,8 +55,6 @@ protected:
         (void) remoteEndpoint; // suppress unused parameter warning
 
         try{
-            // example of parsing single messages. osc::OsckPacketListener
-            // handles the bundle traversal.
 
             printf("OSC rx %s\n", m.AddressPattern());
 
@@ -73,8 +74,31 @@ protected:
                     fprintf(stderr, "Invalid velocity range: %d [-2049, 2049]\n", velocity);
                     return;
                 }
-                motors[motor_index].command_rotateRight(velocity, 1000);
+                if (opts.motors[motor_index].direction_right)
+                    motors[motor_index].command_rotateRight(velocity, 1000);
+                else
+                    motors[motor_index].command_rotateLeft(velocity, 1000);
 
+            }
+
+            if (std::strcmp(m.AddressPattern(), "/motor/msr") == 0){
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                enum MobSpkr::Motor::MicroStepResolution msr = (enum MobSpkr::Motor::MicroStepResolution)(arg++)->AsInt32();
+                if( arg != m.ArgumentsEnd() )
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index){
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+                if (msr < 1 || 8 < msr){
+                    fprintf(stderr, "Invalid microstrep resolution range: %d [1, 8]\n", msr);
+                    return;
+                }
+
+                motors[motor_index].command_setAxisParam_MicroStepResolution(msr, 1000);
             }
 
 //            if( std::strcmp( m.AddressPattern(), "/test1" ) == 0 ){
@@ -115,7 +139,8 @@ int main(int argc, char * argv[])
     argv0 = argv[0];
 
     for(int i = 0; i < MAX_MOTORS; i++){
-        opts.motors->address = DEFAULT_ADDRESS;
+        opts.motors[i].address = DEFAULT_ADDRESS;
+        opts.motors[i].direction_right = true;
     }
 
     int c;
@@ -127,6 +152,7 @@ int main(int argc, char * argv[])
         static struct option long_options[] = {
                 {"port",     required_argument, 0,  'p' },
                 {"addr",     required_argument, 0,  'a' },
+                {"dir", required_argument, 0, 'd'},
                 {0,         0,                 0,  0 }
         };
 
@@ -151,17 +177,45 @@ int main(int argc, char * argv[])
                     return EXIT_FAILURE;
                 }
                 int motor_index = std::atoi(optarg);
-                int address = std::atoi(std::strchr(optarg, ':') + 1);
 
                 if (motor_index >= MAX_MOTORS) {
                     fprintf(stderr, "motor index too high (max %d)\n", MAX_MOTORS);
                     return EXIT_FAILURE;
                 }
+
+                int address = std::atoi(std::strchr(optarg, ':') + 1);
+
                 if (address < 1 || 255 < address) {
                     fprintf(stderr, "invalid motor address, must be 1-255\n");
                     return EXIT_FAILURE;
                 }
                 opts.motors[motor_index].address = address;
+                break;
+            }
+
+            case 'd': {// --dir
+                if (std::strlen(optarg) < 3 || std::strchr(optarg, ':') == NULL) {
+                    fprintf(stderr, "invalid addr option\n");
+                    return EXIT_FAILURE;
+                }
+                int motor_index = std::atoi(optarg);
+
+                if (motor_index >= MAX_MOTORS) {
+                    fprintf(stderr, "motor index too high (max %d)\n", MAX_MOTORS);
+                    return EXIT_FAILURE;
+                }
+
+                bool direction_right;
+                if ( *(std::strchr(optarg, ':') + 1) == 'r')
+                    direction_right = true;
+                else if ( *(std::strchr(optarg, ':') + 1) == 'l')
+                    direction_right = false;
+                else {
+                    fprintf(stderr, "invalid direction (must be r or l): %s\n", std::strchr(optarg, ':') + 1);
+                    return EXIT_FAILURE;
+                }
+
+                opts.motors[motor_index].direction_right = direction_right;
                 break;
             }
 
