@@ -1,5 +1,6 @@
 #include "../motor.hpp"
 
+#include <unistd.h>
 #include <cstdlib>
 #include <cstdio>
 #include <getopt.h>
