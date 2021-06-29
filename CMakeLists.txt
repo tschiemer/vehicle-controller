@@ -9,6 +9,7 @@ set(CMAKE_CXX_STANDARD 14)
 
 set(INCLUDE_DIRS src)
 set(MOTOR_SOURCE_FILES src/motor.hpp src/motor.cpp)
+set(RPI_OSC_PWM_FILES src/rpi-osc-pwm.cpp)
 
 add_subdirectory(src/third_party/oscpack EXCLUDE_FROM_ALL)
 
@@ -23,3 +24,7 @@ add_executable(motor-cmd src/utils/motor-cmd.cpp ${MOTOR_SOURCE_FILES})
 
 add_executable(mobspkr-vehicle-ctrl src/main.cpp ${MOTOR_SOURCE_FILES})
 target_link_libraries(mobspkr-vehicle-ctrl oscpack)
+
+
+add_executable(mobspkr-osc-pwm ${RPI_OSC_PWM_FILES})
+target_link_libraries(mobspkr-osc-pwm oscpack pigpio)
