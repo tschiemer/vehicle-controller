@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=AGGREGAT Starter
+Exec=lxterminal --command="/bin/bash -c '/home/pi/Desktop/Starte-AGGREGAT.sh; /bin/bash'"

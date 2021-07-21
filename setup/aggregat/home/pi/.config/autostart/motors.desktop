@@ -1,0 +1,4 @@
+[Desktop Entry]
+Type=Application
+Name=Motor Starter
+Exec=lxterminal --command="/bin/bash -c '/home/pi/Desktop/Starte-Motoren.sh; /bin/bash'"
