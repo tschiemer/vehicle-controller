@@ -4,7 +4,30 @@ An OSC based proxy controller for a vehicle driven by two Trinamic PD60-3-1160 s
 
 # Building
 
+## Dependencies et al
+
+Requires cmake >= 3.19
+
+### macOS
+
 ```bash
+brew install libserialport
+```
+
+### Linux
+
+```bash
+sudo apt install libserialport0 libserialport-dev
+```
+
+
+
+
+
+## Compiling
+
+```bash
+cd ~/Desktop
 git clone --recursive https://github.com/tschiemer/vehicle-controller
 ```
 
@@ -30,18 +53,6 @@ Change `oscpack`s `CMakeLists.txt` as follows (as of May 4th 2021):
         ADD_EXECUTABLE(OscUnitTests tests/OscUnitTests.cpp)
 ```
 
-## macOS
-
-```bash
-brew install libserialport
-```
-
-## Linux
-
-```bash
-sudo apt install libserialport0 libserialport-dev
-```
-
 # Setup
 
 ## Raspberry Pi
@@ -55,6 +66,33 @@ KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty", ATTRS{devpath}=="1.3", ATTRS{idVendor}
 KERNEL=="ttyACM[0-9]*", SUBSYSTEM=="tty", ATTRS{devpath}=="1.4", ATTRS{idVendor}=="2a3c", ATTRS{idProduct}=="0100", SYMLINK="ttyMotor4"
 ```
 and reboot (or run `sudo udevadm control --reload-rules && sudo udevadm trigger`).
+
+---
+To automatically start basic script as follows:
+
+Add starter script `/home/pi/Desktop/Starte-Motoren.sh`:
+```txt
+#!/bin/bash
+
+vehicle-controller/cmake-build/mobspkr-vehicle-ctrl -d0:l -d1:r /dev/ttyMotor1 /dev/ttyMotor2
+#vehicle-controller/cmake-build/mobspkr-vehicle-ctrl -d0:l -d1:r /dev/ttyACM0 /dev/ttyACM1
+
+
+echo ">>> Application terminate <<<"
+echo "> Hit enter to close window (please make a photo first and send to philip) <"
+
+read
+```
+
+Create autostart file `/home/pi/.config/autostart/motor.desktop`:
+```txt
+[Desktop Entry]
+Type=Application
+Name=Motor Starter
+Exec=lxterminal --command="/bin/bash -c 'cd /home/pi/Desktop; ./Starte-Motoren.sh; /bin/bash'"
+```
+
+
 
 # License
 
