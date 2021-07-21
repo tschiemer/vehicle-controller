@@ -253,6 +253,13 @@ class Motor {
     Response::Status command_rotateRight(uint32_t value, unsigned int timeout_ms);
     Response::Status command_rotateLeft(uint32_t value, unsigned int timeout_ms);
 
+    Response::Status command_setAxisParam_MaxCurrent(uint32_t value, unsigned int timeout_ms);
+    Response::Status command_setAxisParam_PowerDownDelay(uint32_t value, unsigned int timeout_ms);
+    Response::Status command_setAxisParam_Interpolation(uint32_t value, unsigned int timeout_ms);
+    Response::Status command_setAxisParam_PulseDivisor(uint32_t value, unsigned int timeout_ms);
+    Response::Status command_setAxisParam_RampDivisor(uint32_t value, unsigned int timeout_ms);
+    Response::Status command_setAxisParam_MaxAcceleration(uint32_t value, unsigned int timeout_ms);
+
     enum MicroStepResolution {
         MicroStepResolution_2 = 1,
         MicroStepResolution_4 = 2,
@@ -278,6 +285,13 @@ class Motor {
 
         const uint8_t GetAxisParam_MicroStepResolution[] = {01, 06, 0x8C, 00, 00, 00, 00, 00, 0x93};
         const uint8_t SetAxisParam_MicroStepResolution[] = {01, 05, 0x8C, 00, 00, 00, 00, 00, 00};
+
+	const uint8_t SetAxisParam_Interpolation[] = {01, 05, 0xa0, 00, 00, 00, 00, 00, 00};
+        const uint8_t SetAxisParam_PulseDivisor[] = {01, 05, 0x9a, 00, 00, 00, 00, 00, 00};
+        const uint8_t SetAxisParam_RampDivisor[] = {01, 05, 0x99, 00, 00, 00, 00, 00, 00};
+        const uint8_t SetAxisParam_MaxCurrent[] = {01, 05, 06, 00, 00, 00, 00, 00, 00};
+        const uint8_t SetAxisParam_PowerDownDelay[] = {01, 05, 0xd6, 00, 00, 00, 00, 00, 00};
+        const uint8_t SetAxisParam_MaxAcceleration[] = {01, 05, 05, 00, 00, 00, 00, 00, 00};
     }
 }
 

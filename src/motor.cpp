@@ -106,6 +106,31 @@ namespace MobSpkr {
         return execute_with_value(MobSpkr::PD_1160::RotateLeft, value, NULL, 1000) ;
     }
 
+
+    Motor::Response::Status Motor::command_setAxisParam_MaxCurrent(uint32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_MaxCurrent, value, NULL, 1000);
+    }
+
+    Motor::Response::Status Motor::command_setAxisParam_PowerDownDelay(uint32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_PowerDownDelay, value, NULL, 1000) ;
+    }
+
+    Motor::Response::Status Motor::command_setAxisParam_Interpolation(uint32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_Interpolation, value, NULL, 1000) ;
+    }
+
+    Motor::Response::Status Motor::command_setAxisParam_PulseDivisor(uint32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_PulseDivisor, value, NULL, 1000) ;
+    }
+
+    Motor::Response::Status Motor::command_setAxisParam_RampDivisor(uint32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_RampDivisor, value, NULL, 1000) ;
+    }
+
+    Motor::Response::Status Motor::command_setAxisParam_MaxAcceleration(uint32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_MaxAcceleration, value, NULL, 1000);
+    }
+
     Motor::Response::Status Motor::command_getAxisParam_MicroStepResolution(enum MicroStepResolution & value, unsigned int timeout_ms){
         Response response;
 

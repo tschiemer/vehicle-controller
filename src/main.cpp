@@ -12,10 +12,18 @@
 #include "osc/OscPacketListener.h"
 #include "ip/UdpSocket.h"
 
-#define MAX_MOTORS      2
+#define MAX_MOTORS      3
 #define DEFAULT_PORT    9292
 #define DEFAULT_ADDRESS 1
-#define STEPSIZE_RESOLUTION 6
+// 4 = MobSpkr::Motor::MicroStepResolution_16
+#define STEPSIZE_RESOLUTION 4
+#define INTERPOLATION  1
+#define MAX_CURRENT	128
+#define POWER_DOWN_DELAY_10MS 20
+#define PULSE_DIVISOR 6
+#define RAMP_DIVISOR 8
+#define MAX_ACCELERATION 200
+
 
 static char * argv0;
 
@@ -259,8 +267,35 @@ int main(int argc, char * argv[])
         }
         printf("Connected to motor %s using address %d\n", motors[i].get_portname(), motors[i].get_address());
 
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_MicroStepResolution(MobSpkr::Motor::MicroStepResolution_64, 1000)){
+        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_MicroStepResolution((MobSpkr::Motor::MicroStepResolution)STEPSIZE_RESOLUTION, 1000)){
             fprintf(stderr, "failed to set microstepresolution to %d: %s\n", 1, motors[i].get_portname());
+            goto stopping;
+        }
+// 4 == MobSpkr::Motor::MicroStepResolution
+#if INTERPOLATION == 1 && STEPSIZE_RESOLUTION == 4
+        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_Interpolation(1, 1000)){
+            fprintf(stderr, "failed to set interpolation to %d: %s\n", 1, motors[i].get_portname());
+            goto stopping;
+        }
+#endif
+        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_MaxCurrent(MAX_CURRENT, 1000)){
+            fprintf(stderr, "failed to set max current to %d: %s\n", 1, motors[i].get_portname());
+            goto stopping;
+        }
+        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_PowerDownDelay(POWER_DOWN_DELAY_10MS, 1000)){
+            fprintf(stderr, "failed to set power down ndelay to %d: %s\n", 1, motors[i].get_portname());
+            goto stopping;
+        }
+        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_PulseDivisor(PULSE_DIVISOR, 1000)){
+            fprintf(stderr, "failed to set pulse divisor to %d: %s\n", 1, motors[i].get_portname());
+            goto stopping;
+        }
+        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_RampDivisor(RAMP_DIVISOR, 1000)){
+            fprintf(stderr, "failed to set ramp divisor to %d: %s\n", 1, motors[i].get_portname());
+            goto stopping;
+        }
+        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_MaxAcceleration(MAX_ACCELERATION, 1000)){
+            fprintf(stderr, "failed to set max accel to %d: %s\n", 1, motors[i].get_portname());
             goto stopping;
         }
     }
