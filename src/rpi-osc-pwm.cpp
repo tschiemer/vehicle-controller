@@ -110,11 +110,14 @@ class packet_listener : public osc::OscPacketListener {
 
                     int w = position_map(position);
 
+printf("Position %f %d\n", position, w);
+
                     // don't update if unchannged value
                     if (pwms[pwm_index].width == w){
                         return;
                     }
 
+printf("updating!\n");
                     pwms[pwm_index].width = w;
 
                     gpioServo(pwm_index, w);
