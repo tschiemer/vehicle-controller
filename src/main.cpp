@@ -41,6 +41,9 @@ static struct {
 static int motor_count = 0;
 static MobSpkr::Motor motors[MAX_MOTORS];
 
+static int init_motor(int motor);
+static int set_motor_msr(int motor, int msr);
+
 static void print_usage(FILE * f){
     fprintf(f,
             "Usage: %s <motor1-path> <motor2-path> ...\n"
@@ -66,6 +69,23 @@ protected:
         try{
 
             printf("OSC rx %s\n", m.AddressPattern());
+
+            if (std::strcmp(m.AddressPattern(), "/motor/init") == 0){
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                if( arg != m.ArgumentsEnd() )
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index){
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+		printf("RE-INIT MOTOR %d\n", motor_index);
+                if (init_motor(motor_index))
+		    printf("failed\n");
+            }
 
             if (std::strcmp( m.AddressPattern(), "/motor/rotate") == 0){
 
@@ -107,7 +127,9 @@ protected:
                     return;
                 }
 
-                motors[motor_index].command_setAxisParam_MicroStepResolution(msr, 1000);
+		printf("setting motor %d msr = %d\n", motor_index, msr);
+		if (set_motor_msr(motor_index, msr))
+		    printf("failed\n");
             }
 
 //            if( std::strcmp( m.AddressPattern(), "/test1" ) == 0 ){
@@ -142,6 +164,54 @@ protected:
         }
     }
 };
+
+int set_motor_msr(int motor, int msr)
+{
+    printf("microstep resolution MSR = %d\n", msr);
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MicroStepResolution((MobSpkr::Motor::MicroStepResolution)msr, 1000)){
+        fprintf(stderr, "failed\n");
+        return EXIT_FAILURE;
+    }
+
+    return EXIT_SUCCESS;
+}
+
+int init_motor(int motor)
+{
+#if INTERPOLATION == 1 && STEPSIZE_RESOLUTION == 4
+        printf("interpolation = %d\n", INTERPOLATION);
+        if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_Interpolation(1, 1000)){
+            fprintf(stderr, "failed\n");
+            return EXIT_FAILURE;
+        }
+#endif
+    printf("max current = %d\n", MAX_CURRENT);
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MaxCurrent(MAX_CURRENT, 1000)){
+        fprintf(stderr, "failed\n");
+        return EXIT_FAILURE;
+    }
+    printf("power down delay = %d (10ms = %d)\n", POWER_DOWN_DELAY_10MS, POWER_DOWN_DELAY_10MS);
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_PowerDownDelay(POWER_DOWN_DELAY_10MS, 1000)){
+        fprintf(stderr, "failed\n");
+        return EXIT_FAILURE;
+    }
+    printf("Pulse divisor = %d\n", PULSE_DIVISOR);
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_PulseDivisor(PULSE_DIVISOR, 1000)){
+        fprintf(stderr, "failed\n");
+        return EXIT_FAILURE;
+    }
+    printf("ramp divisor = %d\n", RAMP_DIVISOR);
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_RampDivisor(RAMP_DIVISOR, 1000)){
+        fprintf(stderr, "failed\n");
+        return EXIT_FAILURE;
+    }
+    printf("max acceleration = %d\n", MAX_ACCELERATION);
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MaxAcceleration(MAX_ACCELERATION, 1000)){
+        fprintf(stderr, "failed\n");
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
+}
 
 int main(int argc, char * argv[])
 {
@@ -261,43 +331,19 @@ int main(int argc, char * argv[])
     printf("Started OSC receiver at port %d\n", opts.port);
 
     for(int i = 0; i < motor_count; i++){
+	printf("INITIALIZING MOTOR %d: %s\n", i, motors[i].get_portname());
         if (!motors[i].open()){
-            fprintf(stderr, "failed to start motor %d: %s\n", i, motors[i].get_portname());
+            fprintf(stderr, "failed\n");
             goto stopping;
         }
-        printf("Connected to motor %s using address %d\n", motors[i].get_portname(), motors[i].get_address());
+        printf("Connected using address %d\n", motors[i].get_address());
 
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_MicroStepResolution((MobSpkr::Motor::MicroStepResolution)STEPSIZE_RESOLUTION, 1000)){
-            fprintf(stderr, "failed to set microstepresolution to %d: %s\n", 1, motors[i].get_portname());
-            goto stopping;
-        }
-// 4 == MobSpkr::Motor::MicroStepResolution
-#if INTERPOLATION == 1 && STEPSIZE_RESOLUTION == 4
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_Interpolation(1, 1000)){
-            fprintf(stderr, "failed to set interpolation to %d: %s\n", 1, motors[i].get_portname());
-            goto stopping;
-        }
-#endif
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_MaxCurrent(MAX_CURRENT, 1000)){
-            fprintf(stderr, "failed to set max current to %d: %s\n", 1, motors[i].get_portname());
-            goto stopping;
-        }
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_PowerDownDelay(POWER_DOWN_DELAY_10MS, 1000)){
-            fprintf(stderr, "failed to set power down ndelay to %d: %s\n", 1, motors[i].get_portname());
-            goto stopping;
-        }
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_PulseDivisor(PULSE_DIVISOR, 1000)){
-            fprintf(stderr, "failed to set pulse divisor to %d: %s\n", 1, motors[i].get_portname());
-            goto stopping;
-        }
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_RampDivisor(RAMP_DIVISOR, 1000)){
-            fprintf(stderr, "failed to set ramp divisor to %d: %s\n", 1, motors[i].get_portname());
-            goto stopping;
-        }
-        if (MobSpkr::Motor::Response::Status::Success != motors[i].command_setAxisParam_MaxAcceleration(MAX_ACCELERATION, 1000)){
-            fprintf(stderr, "failed to set max accel to %d: %s\n", 1, motors[i].get_portname());
-            goto stopping;
-        }
+	if (init_motor(i))
+            return EXIT_FAILURE;
+
+	if (set_motor_msr(i, STEPSIZE_RESOLUTION))
+            return EXIT_FAILURE;
+
     }
 
 
