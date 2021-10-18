@@ -92,7 +92,14 @@ Name=Motor Starter
 Exec=lxterminal --command="/bin/bash -c 'cd /home/pi/Desktop; ./Starte-Motoren.sh; /bin/bash'"
 ```
 
+## Control Patches (Max/MSP)
 
+Also see folder [control-patches](control-patches):
+
+- `Motor Control.maxpat` provides the control for the Trinamic stepper motors
+- `AGGREGAT Control.maxpat` provides the control for the AGGREGAT servo motors*
+
+*Note that the AGGERGAT patch (at this time) comes with two externals that will be blocked for security reasons by macOS. To unblock follow [these instructions](https://cycling74.com/articles/using-unsigned-max-externals-on-mac-os-10-15-catalina) by cycling74.
 
 # License
 
