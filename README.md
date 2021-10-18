@@ -55,7 +55,19 @@ Change `oscpack`s `CMakeLists.txt` as follows (as of May 4th 2021):
 
 # Setup
 
+These steps are additional to compiling on the target system.
+
 ## Raspberry Pi
+
+The subfolders of folder [setup](setup) contain the necessary files from the file root as need to be added; each subfolder contains the files for a particular mobile speaker configuration, ie:
+- Rotary model (2 steppers for movement, 1 stepper for rotation)
+- Aggregat model (4 steppers for movement, 2 servos for rotation/direction)
+
+Please be aware of the "hidden" (dot-notation) folders typically not visible on macOS/linux (ex /home/pi/.config).
+
+In the following some general notes that *should* already be included in the files as mentioned above.
+
+---
 
 To generate USB port specific serial port links add file `/etc/udev/rules.d/99-trinamic-motor.rules`
 ```txt
