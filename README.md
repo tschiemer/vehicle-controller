@@ -101,6 +101,8 @@ Also see folder [control-patches](control-patches):
 
 *Note that the AGGERGAT patch (at this time) comes with two externals that will be blocked for security reasons by macOS. To unblock follow [these instructions](https://cycling74.com/articles/using-unsigned-max-externals-on-mac-os-10-15-catalina) by cycling74.
 
+*Important note* the combination of macOS/MaxMSP may use different indices for the Joystick HID controls, so possibly the respective `route` blocks have to be adjusted.
+
 # License
 
 MIT License
