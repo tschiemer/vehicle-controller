@@ -4,13 +4,13 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 1,
-			"revision" : 3,
+			"revision" : 11,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 733.0, 143.0, 661.0, 645.0 ],
+		"rect" : [ 713.0, 87.0, 677.0, 779.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -37,7 +37,103 @@
 		"tags" : "",
 		"style" : "",
 		"subpatcher_template" : "",
+		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
+				"box" : 				{
+					"id" : "obj-50",
+					"maxclass" : "newobj",
+					"numinlets" : 10,
+					"numoutlets" : 10,
+					"outlettype" : [ "", "", "", "", "", "", "", "", "", "" ],
+					"patching_rect" : [ 689.0, 560.0, 173.0, 22.0 ],
+					"text" : "route 18 19 21 16 7 6 22 12 13"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-70",
+					"maxclass" : "newobj",
+					"numinlets" : 5,
+					"numoutlets" : 5,
+					"outlettype" : [ "", "", "", "", "" ],
+					"patching_rect" : [ 909.0, 660.0, 89.0, 22.0 ],
+					"text" : "route 16 17 5 4"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-62",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 974.0, 39.0, 50.0, 22.0 ],
+					"text" : "21 127"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-74",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 486.0, 483.0, 71.0, 22.0 ],
+					"text" : "/pwm 19 $1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-72",
+					"maxclass" : "message",
+					"numinlets" : 2,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 371.5, 478.0, 71.0, 22.0 ],
+					"text" : "/pwm 13 $1"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-68",
+					"maxclass" : "newobj",
+					"numinlets" : 1,
+					"numoutlets" : 0,
+					"patching_rect" : [ 386.5, 550.0, 158.0, 22.0 ],
+					"text" : "udpsend 192.168.0.71 9393"
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-67",
+					"maxclass" : "newobj",
+					"numinlets" : 6,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 495.0, 426.0, 97.0, 22.0 ],
+					"text" : "scale 0 127 0. 1."
+				}
+
+			}
+, 			{
+				"box" : 				{
+					"id" : "obj-66",
+					"maxclass" : "newobj",
+					"numinlets" : 6,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
+					"patching_rect" : [ 349.5, 433.0, 97.0, 22.0 ],
+					"text" : "scale 0 127 1. 0."
+				}
+
+			}
+, 			{
 				"box" : 				{
 					"id" : "obj-64",
 					"linecount" : 3,
@@ -91,7 +187,7 @@
 					"patching_rect" : [ 548.0, 314.0, 156.0, 47.0 ],
 					"presentation" : 1,
 					"presentation_linecount" : 2,
-					"presentation_rect" : [ 34.0, 275.5, 192.0, 33.0 ],
+					"presentation_rect" : [ 34.0, 275.5, 195.0, 33.0 ],
 					"text" : " 4 MIDI Empänger auswählen :    \n    ---> AGGREGAT 02"
 				}
 
@@ -109,18 +205,6 @@
 					"presentation_linecount" : 2,
 					"presentation_rect" : [ 34.0, 180.0, 185.0, 33.0 ],
 					"text" : "3 Joystick Kontrolle aktivieren (statt manuell)"
-				}
-
-			}
-, 			{
-				"box" : 				{
-					"id" : "obj-67",
-					"maxclass" : "message",
-					"numinlets" : 2,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
-					"patching_rect" : [ 701.0, 310.0, 29.5, 22.0 ],
-					"text" : "1"
 				}
 
 			}
@@ -311,11 +395,11 @@
 				"box" : 				{
 					"id" : "obj-28",
 					"maxclass" : "newobj",
-					"numinlets" : 3,
-					"numoutlets" : 3,
-					"outlettype" : [ "", "", "" ],
-					"patching_rect" : [ 944.0, 176.0, 69.0, 22.0 ],
-					"text" : "route 16 17"
+					"numinlets" : 5,
+					"numoutlets" : 5,
+					"outlettype" : [ "", "", "", "", "" ],
+					"patching_rect" : [ 944.0, 176.0, 89.0, 22.0 ],
+					"text" : "route 18 19 7 6"
 				}
 
 			}
@@ -365,7 +449,7 @@
 					"fontname" : "Arial",
 					"fontsize" : 13.0,
 					"id" : "obj-47",
-					"items" : [ "Logitech Extreme 3D", ",", "Logitech Extreme 3D 2", ",", "Apple Internal Keyboard / Trackpad", ",", "Apple Internal Keyboard / Trackpad 2", ",", "Apple Internal Keyboard / Trackpad 3" ],
+					"items" : [ "Logitech Extreme 3D", ",", "Logitech Extreme 3D 2", ",", "Keyboard Backlight", ",", "Apple Internal Keyboard / Trackpad", ",", "Apple Internal Keyboard / Trackpad 2", ",", "Apple Internal Keyboard / Trackpad 3" ],
 					"labelclick" : 1,
 					"maxclass" : "umenu",
 					"numinlets" : 1,
@@ -405,9 +489,9 @@
 				"box" : 				{
 					"id" : "obj-281",
 					"maxclass" : "newobj",
-					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "" ],
+					"numinlets" : 0,
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
 					"patching_rect" : [ 19.0, 344.0, 113.0, 22.0 ],
 					"text" : "midimessage.parse"
 				}
@@ -679,7 +763,7 @@
 					"patching_rect" : [ 108.0, 159.0, 183.0, 22.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 44.25, 589.0, 183.0, 22.0 ],
-					"text" : "cc 0 102 63"
+					"text" : "cc 0 103 63"
 				}
 
 			}
@@ -1408,8 +1492,8 @@
 					"id" : "obj-2",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
-					"numoutlets" : 2,
-					"outlettype" : [ "", "" ],
+					"numoutlets" : 1,
+					"outlettype" : [ "" ],
 					"patching_rect" : [ 108.0, 94.0, 103.0, 22.0 ],
 					"text" : "midimessage.gen"
 				}
@@ -1758,7 +1842,7 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-25", 0 ],
-					"order" : 1,
+					"order" : 2,
 					"source" : [ "obj-26", 0 ]
 				}
 
@@ -1767,6 +1851,14 @@
 				"patchline" : 				{
 					"destination" : [ "obj-31", 0 ],
 					"order" : 0,
+					"source" : [ "obj-26", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-67", 0 ],
+					"order" : 1,
 					"source" : [ "obj-26", 0 ]
 				}
 
@@ -1796,6 +1888,20 @@
 				"patchline" : 				{
 					"destination" : [ "obj-18", 0 ],
 					"source" : [ "obj-28", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-56", 0 ],
+					"source" : [ "obj-28", 2 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-59", 0 ],
+					"source" : [ "obj-28", 3 ]
 				}
 
 			}
@@ -1969,6 +2075,7 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-28", 0 ],
+					"order" : 1,
 					"source" : [ "obj-52", 0 ]
 				}
 
@@ -1977,6 +2084,14 @@
 				"patchline" : 				{
 					"destination" : [ "obj-47", 0 ],
 					"source" : [ "obj-52", 1 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-62", 1 ],
+					"order" : 0,
+					"source" : [ "obj-52", 0 ]
 				}
 
 			}
@@ -1997,15 +2112,6 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-57", 0 ],
-					"order" : 1,
-					"source" : [ "obj-56", 0 ]
-				}
-
-			}
-, 			{
-				"patchline" : 				{
-					"destination" : [ "obj-58", 0 ],
-					"order" : 0,
 					"source" : [ "obj-56", 0 ]
 				}
 
@@ -2048,22 +2154,20 @@
 , 			{
 				"patchline" : 				{
 					"destination" : [ "obj-46", 0 ],
-					"order" : 0,
 					"source" : [ "obj-61", 0 ]
 				}
 
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-67", 0 ],
-					"order" : 1,
-					"source" : [ "obj-61", 0 ]
+					"destination" : [ "obj-72", 0 ],
+					"source" : [ "obj-66", 0 ]
 				}
 
 			}
 , 			{
 				"patchline" : 				{
-					"destination" : [ "obj-56", 0 ],
+					"destination" : [ "obj-74", 0 ],
 					"source" : [ "obj-67", 0 ]
 				}
 
@@ -2078,9 +2182,31 @@
 			}
 , 			{
 				"patchline" : 				{
+					"destination" : [ "obj-66", 0 ],
+					"order" : 2,
+					"source" : [ "obj-7", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
 					"destination" : [ "obj-9", 0 ],
 					"order" : 1,
 					"source" : [ "obj-7", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-68", 0 ],
+					"source" : [ "obj-72", 0 ]
+				}
+
+			}
+, 			{
+				"patchline" : 				{
+					"destination" : [ "obj-68", 0 ],
+					"source" : [ "obj-74", 0 ]
 				}
 
 			}
@@ -2092,15 +2218,7 @@
 
 			}
  ],
-		"dependency_cache" : [ 			{
-				"name" : "midimessage.gen.mxo",
-				"type" : "iLaX"
-			}
-, 			{
-				"name" : "midimessage.parse.mxo",
-				"type" : "iLaX"
-			}
- ],
+		"dependency_cache" : [  ],
 		"autosave" : 0
 	}
 
