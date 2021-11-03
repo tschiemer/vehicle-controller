@@ -39,6 +39,8 @@ class Motor {
         Motor(char portname[], uint8_t address){
             if (portname)
                 m_portname = strdup(portname);
+            else
+                m_portname = NULL;
             m_address = address;
             m_port = NULL;
         }
@@ -54,8 +56,8 @@ class Motor {
 
         const char * get_portname() { return m_portname; }
         void set_portname(char portname[]){
-            //if (m_portname)
-              //  free(m_portname);
+            if (m_portname)
+              std::free(m_portname);
 
             if (portname)
                 m_portname = strdup(portname);
