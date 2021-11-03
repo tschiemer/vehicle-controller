@@ -54,8 +54,8 @@ class Motor {
 
         const char * get_portname() { return m_portname; }
         void set_portname(char portname[]){
-            if (m_portname)
-                free(m_portname);
+            //if (m_portname)
+              //  free(m_portname);
 
             if (portname)
                 m_portname = strdup(portname);
@@ -273,6 +273,8 @@ class Motor {
     Response::Status command_getAxisParam_MicroStepResolution(enum MicroStepResolution & value, unsigned int timeout_ms);
     Response::Status command_setAxisParam_MicroStepResolution(enum MicroStepResolution value, unsigned int timeout_ms);
 
+    Response::Status command_getGIOVoltage(uint32_t & value, unsigned int timeout_ms);
+    Response::Status command_getGIOTemperature(uint32_t & value, unsigned int timeout_ms);
 };
 
     namespace PD_1160 {
@@ -292,6 +294,9 @@ class Motor {
         const uint8_t SetAxisParam_MaxCurrent[] = {01, 05, 06, 00, 00, 00, 00, 00, 00};
         const uint8_t SetAxisParam_PowerDownDelay[] = {01, 05, 0xd6, 00, 00, 00, 00, 00, 00};
         const uint8_t SetAxisParam_MaxAcceleration[] = {01, 05, 05, 00, 00, 00, 00, 00, 00};
+
+	const uint8_t GetGIOVoltage[] = {01, 0x0f, 8, 1, 00, 00, 00, 00, 0x19};
+	const uint8_t GetGIOTemperature[] = {01, 0xf, 9, 01, 00, 00, 00, 00, 0x1A};
     }
 }
 
