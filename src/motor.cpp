@@ -147,29 +147,4 @@ namespace MobSpkr {
         return execute_with_value(MobSpkr::PD_1160::SetAxisParam_MicroStepResolution, value, NULL, 1000) ;
     }
 
-
-    Motor::Response::Status Motor::command_getGIOVoltage(uint32_t & value, unsigned int timeout_ms){
-        Response response;
-
-        Response::Status status = execute_with_value(MobSpkr::PD_1160::GetGIOVoltage, value, &response, 1000) ;
-
-        if (status == Response::Status::Success){
-            value = (enum MicroStepResolution)response.value();
-        }
-
-        return status;
-    }
-
-    Motor::Response::Status Motor::command_getGIOTemperature(uint32_t & value, unsigned int timeout_ms){
-        Response response;
-
-        Response::Status status = execute_with_value(MobSpkr::PD_1160::GetGIOTemperature, value, &response, 1000) ;
-
-        if (status == Response::Status::Success){
-            value = (enum MicroStepResolution)response.value();
-        }
-
-        return status;
-    }
-
 }
