@@ -17,8 +17,10 @@ static void print_usage(FILE * out){
             "\t --ror=<velocity>\t Rotate right, velocity in [-2049, 2049]\n"
             "\t --rol=<velocity>\t Rotate left, velocity in [-2049, 2049]\n"
             "\t --msr=[<resolution>]\t Get/set axis parameter microstep resolution [8 => 256, 7 => 128, etc]\n"
+            "\t --volt\t Get voltage\n"
+            "\t --temp\t Get temperature\n"
             "Examples:\n"
-            "%s -s/dev/cu.usbmodemTMCSTEP1 --msr --msr=7 --msr",
+            "%s -s/dev/cu.usbmodemTMCSTEP1 --msr --msr=7 --msr\n",
             argv0, argv0);
 }
 
@@ -49,6 +51,8 @@ int main(int argc, char * argv[]){
                 {"ror", required_argument, 0, 1},
                 {"rol", required_argument, 0, 2},
                 {"msr", optional_argument, 0, 3},
+                {"volt", optional_argument, 0, 4},
+                {"temp", optional_argument, 0, 5},
                 {0,         0,                 0,  0 }
         };
 
@@ -180,6 +184,42 @@ int main(int argc, char * argv[]){
 
                 break;
             }
+
+            case 4:{ // --volt
+
+                if (!motor.is_open()){
+                    fprintf(stderr, "Command before was connected to motor!\n");
+                    goto fail;
+                }
+
+                printf("Get voltage ");
+                uint32_t voltage = 0;
+                if (motor.command_getGIOVoltage(voltage, timeout_ms) != MobSpkr::Motor::Response::Status::Success)
+                    printf("FAILED\n");
+                else 
+                    printf("OK %d.%d\n",voltage/10, voltage%10);
+                
+		break;
+
+           }
+
+            case 5: {// --temp
+
+                if (!motor.is_open()){
+                    fprintf(stderr, "Command before was connected to motor!\n");
+                    goto fail;
+                }
+
+                printf("Get voltage ");
+                uint32_t temp = 0;
+                if (motor.command_getGIOTemperature(temp, timeout_ms) != MobSpkr::Motor::Response::Status::Success)
+                    printf("FAILED\n");
+                else
+                    printf("OK %d deg C\n",temp);
+
+                break;
+
+           }
 
             default:
                 printf("?? getopt returned character code 0%o ??\n", c);
