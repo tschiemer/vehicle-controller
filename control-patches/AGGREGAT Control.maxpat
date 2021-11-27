@@ -10,7 +10,7 @@
 		}
 ,
 		"classnamespace" : "box",
-		"rect" : [ 713.0, 87.0, 677.0, 779.0 ],
+		"rect" : [ 729.0, 87.0, 677.0, 779.0 ],
 		"bglocked" : 0,
 		"openinpresentation" : 1,
 		"default_fontsize" : 12.0,
@@ -70,7 +70,7 @@
 					"numoutlets" : 1,
 					"outlettype" : [ "" ],
 					"patching_rect" : [ 974.0, 39.0, 50.0, 22.0 ],
-					"text" : "21 127"
+					"text" : "19 512"
 				}
 
 			}
@@ -489,9 +489,9 @@
 				"box" : 				{
 					"id" : "obj-281",
 					"maxclass" : "newobj",
-					"numinlets" : 0,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
+					"numinlets" : 1,
+					"numoutlets" : 2,
+					"outlettype" : [ "", "" ],
 					"patching_rect" : [ 19.0, 344.0, 113.0, 22.0 ],
 					"text" : "midimessage.parse"
 				}
@@ -763,7 +763,7 @@
 					"patching_rect" : [ 108.0, 159.0, 183.0, 22.0 ],
 					"presentation" : 1,
 					"presentation_rect" : [ 44.25, 589.0, 183.0, 22.0 ],
-					"text" : "cc 0 103 63"
+					"text" : "cc 0 102 46"
 				}
 
 			}
@@ -1492,8 +1492,8 @@
 					"id" : "obj-2",
 					"maxclass" : "newobj",
 					"numinlets" : 1,
-					"numoutlets" : 1,
-					"outlettype" : [ "" ],
+					"numoutlets" : 2,
+					"outlettype" : [ "", "" ],
 					"patching_rect" : [ 108.0, 94.0, 103.0, 22.0 ],
 					"text" : "midimessage.gen"
 				}
@@ -2218,7 +2218,15 @@
 
 			}
  ],
-		"dependency_cache" : [  ],
+		"dependency_cache" : [ 			{
+				"name" : "midimessage.gen.mxo",
+				"type" : "iLaX"
+			}
+, 			{
+				"name" : "midimessage.parse.mxo",
+				"type" : "iLaX"
+			}
+ ],
 		"autosave" : 0
 	}
 
