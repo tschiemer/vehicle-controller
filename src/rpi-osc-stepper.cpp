@@ -10,10 +10,21 @@
 
 #include "osc/OscReceivedElements.h"
 #include "osc/OscPacketListener.h"
+#include <osc/OscOutboundPacketStream.h>
 #include "ip/UdpSocket.h"
+
+#ifndef HOSTNAME
+#define HOSTNAME "unknown"
+#endif
+
 
 #define MAX_MOTORS      3
 #define DEFAULT_PORT    9292
+//#define BROADCAST_ADDR          "255.255.255.255"
+#define DEFAULT_RESPONSE_PORT   9393
+
+
+
 #define DEFAULT_ADDRESS 1
 // 4 = MobSpkr::Motor::MicroStepResolution_16
 #define STEPSIZE_RESOLUTION 4
@@ -23,6 +34,8 @@
 #define PULSE_DIVISOR 6
 #define RAMP_DIVISOR 8
 #define MAX_ACCELERATION 200
+#define TIMEOUT_MS 1000
+
 
 
 static char * argv0;
@@ -34,8 +47,10 @@ static struct {
         bool direction_right;
     } motors[MAX_MOTORS];
     int port;
+    int response_port;
 } opts {
-    .port = DEFAULT_PORT
+    .port = DEFAULT_PORT,
+    .response_port = DEFAULT_RESPONSE_PORT
 };
 
 static int motor_count = 0;
@@ -50,11 +65,15 @@ static void print_usage(FILE * f){
             "Start OSC server to act as proxy for given motors (max %d)\n"
             "Options:\n"
             "\t -p,--port <port>\t OSC server port (default %d)\n"
+            "\t -r, --response-port <port>\t OSC response port (default %d)\n"
             "\t -a, --addr <motor-index>:<addr1>\n"
             "\t\t\t Set address of given motor (default %d)\n"
             "\t -d, --dir <motor-index>:[l,r]\n"
-            "\t\t\t Set direction of given motor to turn left or right\n",
-            argv0, MAX_MOTORS, DEFAULT_PORT, DEFAULT_ADDRESS);
+            "\t\t\t Set direction of given motor to turn left or right\n"
+            "Note:\n"
+            "\t Compiled with hostname %s\n"
+//            "\t Sending responses to %s\n"
+            , argv0, MAX_MOTORS, DEFAULT_PORT, DEFAULT_RESPONSE_PORT, DEFAULT_ADDRESS, HOSTNAME);
 }
 
 
@@ -104,9 +123,9 @@ protected:
                     return;
                 }
                 if (opts.motors[motor_index].direction_right)
-                    motors[motor_index].command_rotateRight(velocity, 1000);
+                    motors[motor_index].command_rotateRight(velocity, TIMEOUT_MS);
                 else
-                    motors[motor_index].command_rotateLeft(velocity, 1000);
+                    motors[motor_index].command_rotateLeft(velocity, TIMEOUT_MS);
 
             }
 
@@ -127,11 +146,85 @@ protected:
                     return;
                 }
 
-		printf("setting motor %d msr = %d\n", motor_index, msr);
-		if (set_motor_msr(motor_index, msr))
-		    printf("failed\n");
+		        fprintf(stderr, "setting motor %d msr = %d\n", motor_index, msr);
+                if (set_motor_msr(motor_index, msr))
+                    fprintf(stderr, "failed\n");
             }
 
+
+            if (std::strcmp(m.AddressPattern(), "/motor/temp") == 0) {
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+
+                const char *host = (arg++)->AsString();
+                int port = (arg++)->AsInt32();
+
+                if (arg != m.ArgumentsEnd())
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index) {
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+                // try to create transmit socket
+                fprintf(stderr, "UDP response addr = %s:%u\n", host, port);
+                UdpTransmitSocket transmitSocket( IpEndpointName( host, port ) );
+
+                fprintf(stderr, "Getting motor %d temp ...", motor_index);
+                uint32_t temp = 0;
+                if (motors[motor_index].command_getGIOTemperature(temp, TIMEOUT_MS) != MobSpkr::Motor::Response::Status::Success)
+                    fprintf(stderr, "FAILED\n");
+                else
+                    fprintf(stderr, "%d deg C\n",temp);
+
+                char buffer[256];
+                osc::OutboundPacketStream p( buffer, sizeof(buffer) );
+
+                p << osc::BeginMessage( "/temp" )
+                    << HOSTNAME << motor_index << (int)temp
+                    << osc::EndMessage;
+
+                transmitSocket.Send( p.Data(), p.Size() );
+            }
+
+            if (std::strcmp(m.AddressPattern(), "/motor/volt") == 0) {
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+
+                const char *host = (arg++)->AsString();
+                int port = (arg++)->AsInt32();
+
+                if (arg != m.ArgumentsEnd())
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index) {
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+                // try to create transmit socket
+                fprintf(stderr, "UDP response addr = %s:%u\n", host, port);
+                UdpTransmitSocket transmitSocket( IpEndpointName( host, port ) );
+
+                fprintf(stderr, "Getting motor %d volt ...", motor_index);
+                uint32_t voltage = 0;
+                if (motors[motor_index].command_getGIOVoltage(voltage, TIMEOUT_MS) != MobSpkr::Motor::Response::Status::Success)
+                    fprintf(stderr, "FAILED\n");
+                else
+                    fprintf(stderr, "%d.%d\n",voltage/10, voltage%10);
+
+                char buffer[256];
+                osc::OutboundPacketStream p( buffer, sizeof(buffer) );
+
+                p << osc::BeginMessage( "/volt" )
+                  << HOSTNAME << motor_index << (int)voltage
+                  << osc::EndMessage;
+
+                transmitSocket.Send( p.Data(), p.Size() );
+            }
 //            if( std::strcmp( m.AddressPattern(), "/test1" ) == 0 ){
 //                // example #1 -- argument stream interface
 //                osc::ReceivedMessageArgumentStream args = m.ArgumentStream();
@@ -168,7 +261,7 @@ protected:
 int set_motor_msr(int motor, int msr)
 {
     printf("microstep resolution MSR = %d\n", msr);
-    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MicroStepResolution((MobSpkr::Motor::MicroStepResolution)msr, 1000)){
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MicroStepResolution((MobSpkr::Motor::MicroStepResolution)msr, TIMEOUT_MS)){
         fprintf(stderr, "failed\n");
         return EXIT_FAILURE;
     }
@@ -180,33 +273,33 @@ int init_motor(int motor)
 {
 #if INTERPOLATION == 1 && STEPSIZE_RESOLUTION == 4
         printf("interpolation = %d\n", INTERPOLATION);
-        if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_Interpolation(1, 1000)){
+        if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_Interpolation(1, TIMEOUT_MS)){
             fprintf(stderr, "failed\n");
             return EXIT_FAILURE;
         }
 #endif
     printf("max current = %d\n", MAX_CURRENT);
-    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MaxCurrent(MAX_CURRENT, 1000)){
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MaxCurrent(MAX_CURRENT, TIMEOUT_MS)){
         fprintf(stderr, "failed\n");
         return EXIT_FAILURE;
     }
     printf("power down delay = %d (10ms = %d)\n", POWER_DOWN_DELAY_10MS, POWER_DOWN_DELAY_10MS);
-    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_PowerDownDelay(POWER_DOWN_DELAY_10MS, 1000)){
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_PowerDownDelay(POWER_DOWN_DELAY_10MS, TIMEOUT_MS)){
         fprintf(stderr, "failed\n");
         return EXIT_FAILURE;
     }
     printf("Pulse divisor = %d\n", PULSE_DIVISOR);
-    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_PulseDivisor(PULSE_DIVISOR, 1000)){
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_PulseDivisor(PULSE_DIVISOR, TIMEOUT_MS)){
         fprintf(stderr, "failed\n");
         return EXIT_FAILURE;
     }
     printf("ramp divisor = %d\n", RAMP_DIVISOR);
-    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_RampDivisor(RAMP_DIVISOR, 1000)){
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_RampDivisor(RAMP_DIVISOR, TIMEOUT_MS)){
         fprintf(stderr, "failed\n");
         return EXIT_FAILURE;
     }
     printf("max acceleration = %d\n", MAX_ACCELERATION);
-    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MaxAcceleration(MAX_ACCELERATION, 1000)){
+    if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_MaxAcceleration(MAX_ACCELERATION, TIMEOUT_MS)){
         fprintf(stderr, "failed\n");
         return EXIT_FAILURE;
     }
@@ -230,12 +323,13 @@ int main(int argc, char * argv[])
         int option_index = 0;
         static struct option long_options[] = {
                 {"port",     required_argument, 0,  'p' },
+                {"response-port", required_argument, 0, 'r'},
                 {"addr",     required_argument, 0,  'a' },
                 {"dir", required_argument, 0, 'd'},
                 {0,         0,                 0,  0 }
         };
 
-        c = getopt_long(argc, argv, "h?p:a:d:",
+        c = getopt_long(argc, argv, "h?p:r:a:d:",
                         long_options, &option_index);
         if (c == -1)
             break;
@@ -246,6 +340,14 @@ int main(int argc, char * argv[])
                 opts.port = std::atoi(optarg);
                 if (opts.port < 1 || 0xffff < opts.port) {
                     fprintf(stderr, "invalid port: %d\n", opts.port);
+                    return EXIT_FAILURE;
+                }
+                break;
+
+            case 'r': // --port
+                opts.response_port = std::atoi(optarg);
+                if (opts.response_port < 1 || 0xffff < opts.response_port) {
+                    fprintf(stderr, "invalid response port: %d\n", opts.response_port);
                     return EXIT_FAILURE;
                 }
                 break;
