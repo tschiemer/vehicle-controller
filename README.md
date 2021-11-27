@@ -1,6 +1,10 @@
 # Mobile Speaker: Vehicle Controller
 
-An OSC based proxy controller for a vehicle driven by two Trinamic PD60-3-1160 stepper motors.
+An OSC based proxy controller for Linux-based hosts (RPi 4) for a vehicle driven by Trinamic PD60-3-1160 stepper motors,
+plus servo controls through PWM. 
+
+Part of the ICST research project [Sound Moving Source](https://www.zhdk.ch/forschungsprojekt/sound-moving-sources-577831) that
+entails motorized, mobile loudspeakers.
 
 # Building
 
