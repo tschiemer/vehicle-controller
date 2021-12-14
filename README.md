@@ -1,7 +1,7 @@
 # Mobile Speaker: Vehicle Controller
 
 An OSC based proxy controller for Linux-based hosts (RPi 4) for a vehicle driven by Trinamic PD60-3-1160 stepper motors,
-plus servo controls through PWM. 
+plus servo controls through PWM.
 
 Part of the ICST research project [Sound Moving Sources](https://www.zhdk.ch/forschungsprojekt/sound-moving-sources-577831) that
 entails motorized, mobile loudspeakers.
@@ -25,6 +25,16 @@ sudo apt install libserialport0 libserialport-dev
 ```
 
 
+#### RPi
+
+```bash
+sudo apt update
+sudo apt install snapd
+sudo reboot
+....
+sudo snap install core
+sudo snap install cmake --classic
+```
 
 
 
@@ -112,8 +122,8 @@ Exec=lxterminal --command="/bin/bash -c 'cd /home/pi/Desktop; ./Starte-Motoren.s
 
 Also see folder [control-patches](control-patches):
 
-- `Motor Control.maxpat` provides the control for the Trinamic stepper motors
-- `AGGREGAT Control.maxpat` provides the control for the AGGREGAT servo motors*
+- `SMS_Control_Roger.maxpat` provides controls for the two-motor with rotary speaker mobile using a wheel/pedal HID
+- `AGGREGAT Control.maxpat` provides controls for the AGGREGAT servo motors
 
 *Note that the AGGERGAT patch (at this time) comes with two externals that will be blocked for security reasons by macOS. To unblock follow [these instructions](https://cycling74.com/articles/using-unsigned-max-externals-on-mac-os-10-15-catalina) by cycling74.
 
