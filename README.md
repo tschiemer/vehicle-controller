@@ -118,6 +118,22 @@ Name=Motor Starter
 Exec=lxterminal --command="/bin/bash -c 'cd /home/pi/Desktop; ./Starte-Motoren.sh; /bin/bash'"
 ```
 
+## OSC commands
+
+### rpi-osc-stepper (mobspkr-vehicle-ctrl)
+- `/motor/init <motor-index>` initializes motor with necessary parameters
+- `/motor/msr <motor-index> <msr-value>` sets microstep resolution (don't use unless you know whacha doin)
+- `/motor/stop <motor-index>` stops motor
+- `/motor/rotate <motor-index> <speed>` rotate motor with <speed>
+- `/motor/reset-position <motor-index>` stops motor and sets current position as origin (0 degrees) position
+- `/motor/move-by-angle <motor-index> <angle>` moves motor by <angle> (-360 .. 360) from *current* position (relative)
+- `/motor/move-to-angle <motor-index> <angle>` moves motor to <angle> (-360 .. 360) from origin position; when rotating, positive values will cause a rotation until <angle> in the current rotational direction whereas negative values will be in the anti-direction
+- `/motor/temp <motor-index> <host> <port>` request motor temperature to be sent to <host> on <port> using message `/temp <device-name> <motor-index> <temp>` 
+- `/motor/volt <motor-index> <host> <port>` request voltage on motor to be sent to <host> on <port> using message `/volt <device-name> <motor-index> <volt>`
+
+### rspi-osc-pwm (mobspkr-osc-pwm)
+- `/pwm <pwm-index> <pwm-width>`
+
 ## Control Patches (Max/MSP)
 
 Also see folder [control-patches](control-patches):

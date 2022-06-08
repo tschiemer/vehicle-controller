@@ -144,6 +144,29 @@ protected:
                 motors[motor_index].command_setAxisParam_ActualPosition(0, TIMEOUT_MS);
             }
 
+            if (std::strcmp( m.AddressPattern(), "/motor/move-by-angle") == 0) {
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                int angle = (arg++)->AsInt32();
+                if (arg != m.ArgumentsEnd())
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index) {
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+                if (angle < -360 || 360 < angle) {
+                    fprintf(stderr, "Invalid angle: %d [-360, 360]\n", angle);
+                    return;
+                }
+
+                int32_t pos_target = (angle * NSTEPS_ONE_ROTATION) / 360;
+
+                motors[motor_index].command_moveToPosition(pos_target, MobSpkr::Motor::MovementType_Relative, 0, TIMEOUT_MS);
+            }
+
             if (std::strcmp( m.AddressPattern(), "/motor/move-to-angle") == 0){
 
                 osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
@@ -157,14 +180,19 @@ protected:
                     return;
                 }
 
-                if (angle < 0 || 360 < angle){
-                    fprintf(stderr, "Invalid angle: %d [0, 360]\n", angle);
+                if (angle < -360 || 360 < angle){
+                    fprintf(stderr, "Invalid angle: %d [-360, 360]\n", angle);
                     return;
                 }
 
+                int32_t inverted = 0;
+                if (angle < 0){
+                    inverted = 1;
+                    angle = 360 + angle;
+                }
 
-                int32_t angle_position = (angle * NSTEPS_ONE_ROTATION) / 360;
-                fprintf(stderr, "angle %d (%d)\n", angle, angle_position);
+                int32_t desired_angled = (angle * NSTEPS_ONE_ROTATION) / 360;
+                fprintf(stderr, "angle %d (%d)\n", angle, desired_angled);
 
 
                 int32_t pos;
@@ -178,23 +206,30 @@ protected:
                 }
                 fprintf(stderr,"-> %d\n", pos);
 
-                int32_t pos_angle = pos % NSTEPS_ONE_ROTATION;
-                int32_t pos_base = pos - pos_angle;
+                int32_t current_angle = pos % NSTEPS_ONE_ROTATION;
+                int32_t pos_base = pos - current_angle;
 
                 int32_t pos_target = 0;
 
                 // if rotating "right" position increments, thus we go for the next bigger possible position, otherwise the next smaller one
-                if (current_movement[motor_index] > 0){
-                    if (pos_angle > angle_position){
-                        pos_target = pos_base + NSTEPS_ONE_ROTATION + angle_position;
+                // treat not-rotating as right-rotation
+                if (current_movement[motor_index] >= 0){
+                    if (current_angle > desired_angled){
+                        pos_target = pos_base + NSTEPS_ONE_ROTATION + desired_angled;
                     } else {
-                        pos_target = pos_base + angle_position;
+                        pos_target = pos_base + desired_angled;
+                    }
+                    if (inverted){
+                        pos_target -= NSTEPS_ONE_ROTATION;
                     }
                 } else {
-                    if (pos_angle < angle_position){
-                        pos_target = pos_base - NSTEPS_ONE_ROTATION + angle_position;
+                    if (current_angle < desired_angled){
+                        pos_target = pos_base - NSTEPS_ONE_ROTATION + desired_angled;
                     } else {
-                        pos_target = pos_base + angle_position;
+                        pos_target = pos_base + desired_angled;
+                    }
+                    if (inverted){
+                        pos_target += NSTEPS_ONE_ROTATION;
                     }
                 }
 
