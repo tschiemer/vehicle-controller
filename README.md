@@ -121,6 +121,8 @@ Exec=lxterminal --command="/bin/bash -c 'cd /home/pi/Desktop; ./Starte-Motoren.s
 ## OSC commands
 
 ### rpi-osc-stepper (mobspkr-vehicle-ctrl)
+OSC receive port 9494
+
 - `/motor/init <motor-index>` initializes motor with necessary parameters
 - `/motor/msr <motor-index> <msr-value>` sets microstep resolution (don't use unless you know whacha doin)
 - `/motor/stop <motor-index>` stops motor
@@ -132,14 +134,19 @@ Exec=lxterminal --command="/bin/bash -c 'cd /home/pi/Desktop; ./Starte-Motoren.s
 - `/motor/volt <motor-index> <host> <port>` request voltage on motor to be sent to <host> on <port> using message `/volt <device-name> <motor-index> <volt>`
 
 ### rspi-osc-pwm (mobspkr-osc-pwm)
+OSC receive port 9393
 - `/pwm <pwm-index> <pwm-width>`
+
+## Devices
+
+
 
 ## Control Patches (Max/MSP)
 
 Also see folder [control-patches](control-patches):
 
-- `SMS_Control_Roger.maxpat` provides controls for the two-motor with rotary speaker mobile using a wheel/pedal HID
-- `AGGREGAT Control.maxpat` provides controls for the AGGREGAT servo motors
+- `SMS_Control_Angela.maxpat` provides controls for the AGGREGAT servo motors (IP 192.168.0.71)
+- `SMS_Control_Roger.maxpat` provides controls for the two-motor with rotary speaker mobile using a wheel/pedal HID (IP 192.168.0.72)
 
 *Note that the AGGERGAT patch (at this time) comes with two externals that will be blocked for security reasons by macOS. To unblock follow [these instructions](https://cycling74.com/articles/using-unsigned-max-externals-on-mac-os-10-15-catalina) by cycling74.
 
