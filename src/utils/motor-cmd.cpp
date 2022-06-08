@@ -14,11 +14,15 @@ static void print_usage(FILE * out){
             "\t -c, --close\t Closes serial port\n"
             "\t -a,--address=<address>\n"
             "\t -w, --wait=[<msec>]\t Wait <msec> until next command if given, or until pressed enter\n"
+            "\t -q, --stop\t Stop motor\n"
             "\t --ror=<velocity>\t Rotate right, velocity in [-2049, 2049]\n"
             "\t --rol=<velocity>\t Rotate left, velocity in [-2049, 2049]\n"
             "\t --msr=[<resolution>]\t Get/set axis parameter microstep resolution [8 => 256, 7 => 128, etc]\n"
             "\t --volt\t Get voltage\n"
             "\t --temp\t Get temperature\n"
+            "\t --pos [<pos>]\t Get/Set actual position (motor must be stopped)\n"
+            "\t --move-to <pos>\t Move to absolute position\n"
+            "\t --move-by <pos>\t Move to relative position\n"
             "Examples:\n"
             "%s -s/dev/cu.usbmodemTMCSTEP1 --msr --msr=7 --msr\n",
             argv0, argv0);
@@ -53,10 +57,14 @@ int main(int argc, char * argv[]){
                 {"msr", optional_argument, 0, 3},
                 {"volt", optional_argument, 0, 4},
                 {"temp", optional_argument, 0, 5},
+                {"pos", optional_argument, 0, 6},
+                {"move-to", required_argument, 0, 7},
+                {"move-by", required_argument, 0, 8},
+                {"stop", no_argument, 0, 'q'},
                 {0,         0,                 0,  0 }
         };
 
-        c = getopt_long(argc, argv, "h?a:s:cw::",
+        c = getopt_long(argc, argv, "h?a:s:cw::q",
                         long_options, &option_index);
         if (c == -1)
             break;
@@ -114,6 +122,20 @@ int main(int argc, char * argv[]){
                     printf(">> Waiting for ENTER <<\n");
                     read(STDIN_FILENO, &c, 1);
                 }
+                break;
+            }
+
+            case 'q': { // -q, --stop
+                if (!motor.is_open()){
+                    fprintf(stderr, "Command before was connected to motor!\n");
+                    goto fail;
+                }
+                printf("Motor STOP ");
+                if (motor.command_stopMotor(timeout_ms) != MobSpkr::Motor::Response::Status::Success)
+                    printf("FAILED\n");
+                else
+                    printf("OK\n");
+
                 break;
             }
 
@@ -220,6 +242,79 @@ int main(int argc, char * argv[]){
                 break;
 
            }
+
+           case 6: { // --pos
+
+               if (!motor.is_open()){
+                   fprintf(stderr, "Command before was connected to motor!\n");
+                   goto fail;
+               }
+
+               int32_t pos;
+               MobSpkr::Motor::Response::Status status;
+               if (optarg){
+                   pos = std::atoi(optarg);
+                   if (pos < -2147483648 || 2147483647 < pos){
+                       fprintf(stderr, "Invalid absolute position (must be in [-2147483648, 2147483647]): %d\n", pos);
+                       goto fail;
+                   }
+                   printf("Set axis param (actual position) %d ", pos);
+                   status = motor.command_setAxisParam_ActualPosition(pos, timeout_ms);
+               } else {
+                   printf("Get axis param (actual position) ");
+                   status = motor.command_getAxisParam_ActualPosition(pos, timeout_ms);
+                   if (status == MobSpkr::Motor::Response::Status::Success)
+                       printf("-> %d ", pos);
+               }
+               if (status != MobSpkr::Motor::Response::Status::Success)
+                   printf("FAILED\n");
+               else
+                   printf("OK\n");
+
+               break;
+           }
+
+            case 7: { // --move-to
+                if (!motor.is_open()){
+                    fprintf(stderr, "Command before was connected to motor!\n");
+                    goto fail;
+                }
+
+                int32_t pos = std::atoi(optarg);
+                if (pos < -2147483648 || 2147483647 < pos){
+                    fprintf(stderr, "Invalid absolute position (must be in [-2147483648, 2147483647]): %d\n", pos);
+                    goto fail;
+                }
+                printf("Moving to absolute position %d ", pos);
+                MobSpkr::Motor::Response::Status status = motor.command_moveToPosition(pos, MobSpkr::Motor::MovementType_Absolute, 0, timeout_ms);
+                if (status != MobSpkr::Motor::Response::Status::Success)
+                    printf("FAILED\n");
+                else
+                    printf("OK\n");
+
+                break;
+            }
+
+            case 8: { // --move-by
+                if (!motor.is_open()){
+                    fprintf(stderr, "Command before was connected to motor!\n");
+                    goto fail;
+                }
+
+                int32_t pos = std::atoi(optarg);
+                if (pos < -2147483648 || 2147483647 < pos){
+                    fprintf(stderr, "Invalid relative position (must be in [-2147483648, 2147483647]): %d\n", pos);
+                    goto fail;
+                }
+                printf("Moving by relative position %d ", pos);
+                MobSpkr::Motor::Response::Status status = motor.command_moveToPosition(pos, MobSpkr::Motor::MovementType_Relative, 0, timeout_ms);
+                if (status != MobSpkr::Motor::Response::Status::Success)
+                    printf("FAILED\n");
+                else
+                    printf("OK\n");
+
+                break;
+            }
 
             default:
                 printf("?? getopt returned character code 0%o ??\n", c);

@@ -235,8 +235,22 @@ class Motor {
         return execute(command, response, timeout_ms);
     }
 
+    Response::Status command_stopMotor(unsigned int timeout_ms);
+
+
     Response::Status command_rotateRight(uint32_t value, unsigned int timeout_ms);
     Response::Status command_rotateLeft(uint32_t value, unsigned int timeout_ms);
+
+    enum MovementType {
+        MovementType_Absolute = 0,
+        MovementType_Relative = 1,
+        MovementType_Coordinate = 2
+    };
+
+    Response::Status command_moveToPosition(int32_t pos, enum MovementType type, uint8_t coord, unsigned int timeout_ms);
+
+    Response::Status command_getAxisParam_ActualPosition(int32_t & value, unsigned int timeout_ms);
+    Response::Status command_setAxisParam_ActualPosition(int32_t value, unsigned int timeout_ms);
 
     Response::Status command_setAxisParam_MaxCurrent(uint32_t value, unsigned int timeout_ms);
     Response::Status command_setAxisParam_PowerDownDelay(uint32_t value, unsigned int timeout_ms);
@@ -260,6 +274,7 @@ class Motor {
 
     Response::Status command_getGIOVoltage(uint32_t & value, unsigned int timeout_ms);
     Response::Status command_getGIOTemperature(uint32_t & value, unsigned int timeout_ms);
+
 };
 
     namespace PD_1160 {
@@ -267,21 +282,27 @@ class Motor {
         const uint8_t GetVersion0[] = {01, 0x80, 00, 00, 00, 00, 00, 00, 0x89};
         const uint8_t GetVersion1[] = {01, 00, 01, 00, 00, 00, 00, 00, 0x8A};
 
+        const uint8_t MotorStop[] = {01, 03, 00, 00, 00, 00, 00, 00, 04};
+
         const uint8_t RotateRight[]  = {0, 01, 00, 00, 00, 00, 00, 0, 0};
         const uint8_t RotateLeft[] = {0, 02, 00, 00, 00, 00, 00, 0, 0};
+        const uint8_t MoveToPosition[] = {0, 04, 00, 00, 00, 01, 0x5f, 0x90, 0xF5};
+
+        const uint8_t GetAxisParam_ActualPosition[] = {01, 06, 01, 00, 00, 00, 00, 00, 0x0A};
+        const uint8_t SetAxisParam_ActualPosition[] = {01, 05, 01, 00, 00, 00, 00, 00, 00};
 
         const uint8_t GetAxisParam_MicroStepResolution[] = {01, 06, 0x8C, 00, 00, 00, 00, 00, 0x93};
         const uint8_t SetAxisParam_MicroStepResolution[] = {01, 05, 0x8C, 00, 00, 00, 00, 00, 00};
 
-	const uint8_t SetAxisParam_Interpolation[] = {01, 05, 0xa0, 00, 00, 00, 00, 00, 00};
+	    const uint8_t SetAxisParam_Interpolation[] = {01, 05, 0xa0, 00, 00, 00, 00, 00, 00};
         const uint8_t SetAxisParam_PulseDivisor[] = {01, 05, 0x9a, 00, 00, 00, 00, 00, 00};
         const uint8_t SetAxisParam_RampDivisor[] = {01, 05, 0x99, 00, 00, 00, 00, 00, 00};
         const uint8_t SetAxisParam_MaxCurrent[] = {01, 05, 06, 00, 00, 00, 00, 00, 00};
         const uint8_t SetAxisParam_PowerDownDelay[] = {01, 05, 0xd6, 00, 00, 00, 00, 00, 00};
         const uint8_t SetAxisParam_MaxAcceleration[] = {01, 05, 05, 00, 00, 00, 00, 00, 00};
 
-	const uint8_t GetGIOVoltage[] = {01, 0x0f, 8, 1, 00, 00, 00, 00, 0x19};
-	const uint8_t GetGIOTemperature[] = {01, 0xf, 9, 01, 00, 00, 00, 00, 0x1A};
+	    const uint8_t GetGIOVoltage[] = {01, 0x0f, 8, 1, 00, 00, 00, 00, 0x19};
+	    const uint8_t GetGIOTemperature[] = {01, 0xf, 9, 01, 00, 00, 00, 00, 0x1A};
     }
 }
 

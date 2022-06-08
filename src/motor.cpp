@@ -98,6 +98,10 @@ namespace MobSpkr {
         return (Response::Status)response[Response::STATUS];
     }
 
+    Motor::Response::Status Motor::command_stopMotor(unsigned int timeout_ms){
+        return execute(MobSpkr::PD_1160::MotorStop, NULL, 1000);
+    }
+
     Motor::Response::Status Motor::command_rotateRight(uint32_t value, unsigned int timeout_ms){
         return execute_with_value(MobSpkr::PD_1160::RotateRight, value, NULL, 1000) ;
     }
@@ -106,6 +110,47 @@ namespace MobSpkr {
         return execute_with_value(MobSpkr::PD_1160::RotateLeft, value, NULL, 1000) ;
     }
 
+    Motor::Response::Status Motor::command_moveToPosition(int32_t pos, enum MovementType type, uint8_t coord, unsigned int timeout_ms){
+        uint8_t cmd[sizeof(MobSpkr::PD_1160::MoveToPosition)];
+
+        std::memcpy(cmd, MobSpkr::PD_1160::MoveToPosition, sizeof(MobSpkr::PD_1160::MoveToPosition));
+
+        switch(type){
+            case MovementType_Absolute:
+                cmd[2] = MovementType_Absolute;
+                cmd[3] = 0;
+                break;
+            case MovementType_Relative:
+                cmd[2] = MovementType_Relative;
+                cmd[3] = 0;
+                break;
+            case MovementType_Coordinate:
+                cmd[2] = MovementType_Coordinate;
+                cmd[3] = coord;
+                break;
+            default:
+                return Motor::Response::InvalidValue;
+        }
+
+        return execute_with_value(cmd, pos, NULL, 1000);
+    }
+
+
+    Motor::Response::Status Motor::command_getAxisParam_ActualPosition(int32_t & value, unsigned int timeout_ms){
+        Response response;
+
+        Response::Status status = execute_with_value(MobSpkr::PD_1160::GetAxisParam_ActualPosition, value, &response, 1000) ;
+
+        if (status == Response::Status::Success){
+            value = response.value();
+        }
+
+        return status;
+    }
+
+    Motor::Response::Status Motor::command_setAxisParam_ActualPosition(int32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_ActualPosition, value, NULL, 1000) ;
+    }
 
     Motor::Response::Status Motor::command_setAxisParam_MaxCurrent(uint32_t value, unsigned int timeout_ms){
         return execute_with_value(MobSpkr::PD_1160::SetAxisParam_MaxCurrent, value, NULL, 1000);
