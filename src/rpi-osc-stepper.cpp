@@ -36,6 +36,9 @@
 #define MAX_ACCELERATION 200
 #define TIMEOUT_MS 1000
 
+// the number of steps required for a complete rotation given the above configuration
+#define NSTEPS_ONE_ROTATION 3200
+
 
 
 static char * argv0;
@@ -55,6 +58,7 @@ static struct {
 
 static int motor_count = 0;
 static MobSpkr::Motor motors[MAX_MOTORS];
+static int32_t current_movement[MAX_MOTORS];
 
 static int init_motor(int motor);
 static int set_motor_msr(int motor, int msr);
@@ -101,10 +105,105 @@ protected:
                     return;
                 }
 
-		printf("RE-INIT MOTOR %d\n", motor_index);
+		        printf("RE-INIT MOTOR %d\n", motor_index);
                 if (init_motor(motor_index))
-		    printf("failed\n");
+		            printf("failed\n");
             }
+
+            if (std::strcmp( m.AddressPattern(), "/motor/stop") == 0){
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                if( arg != m.ArgumentsEnd() )
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index){
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+                motors[motor_index].command_stopMotor(TIMEOUT_MS);
+                current_movement[motor_index] = 0;
+            }
+
+
+            if (std::strcmp( m.AddressPattern(), "/motor/reset-position") == 0){
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                if( arg != m.ArgumentsEnd() )
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index){
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+                motors[motor_index].command_stopMotor(TIMEOUT_MS);
+                current_movement[motor_index] = 0;
+                motors[motor_index].command_setAxisParam_ActualPosition(0, TIMEOUT_MS);
+            }
+
+            if (std::strcmp( m.AddressPattern(), "/motor/move-to-angle") == 0){
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                int angle = (arg++)->AsInt32();
+                if( arg != m.ArgumentsEnd() )
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index){
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+                if (angle < 0 || 360 < angle){
+                    fprintf(stderr, "Invalid angle: %d [0, 360]\n", angle);
+                    return;
+                }
+
+
+                int32_t angle_position = (angle * NSTEPS_ONE_ROTATION) / 360;
+                fprintf(stderr, "angle %d (%d)\n", angle, angle_position);
+
+
+                int32_t pos;
+                MobSpkr::Motor::Response::Status status;
+                status = motors[motor_index].command_getAxisParam_ActualPosition(pos, TIMEOUT_MS);
+
+                fprintf(stderr, "getting current pos ");
+                if (status != MobSpkr::Motor::Response::Status::Success){
+                    fprintf(stderr, "failed\n");
+                    return;
+                }
+                fprintf(stderr,"-> %d\n", pos);
+
+                int32_t pos_angle = pos % NSTEPS_ONE_ROTATION;
+                int32_t pos_base = pos - pos_angle;
+
+                int32_t pos_target = 0;
+
+                // if rotating "right" position increments, thus we go for the next bigger possible position, otherwise the next smaller one
+                if (current_movement[motor_index] > 0){
+                    if (pos_angle > angle_position){
+                        pos_target = pos_base + NSTEPS_ONE_ROTATION + angle_position;
+                    } else {
+                        pos_target = pos_base + angle_position;
+                    }
+                } else {
+                    if (pos_angle < angle_position){
+                        pos_target = pos_base - NSTEPS_ONE_ROTATION + angle_position;
+                    } else {
+                        pos_target = pos_base + angle_position;
+                    }
+                }
+
+                fprintf(stderr, "moving to absolute pos %d\n", pos_target);
+
+                motors[motor_index].command_moveToPosition(pos_target, MobSpkr::Motor::MovementType_Absolute, 0, TIMEOUT_MS);
+            }
+
+
 
             if (std::strcmp( m.AddressPattern(), "/motor/rotate") == 0){
 
@@ -122,10 +221,13 @@ protected:
                     fprintf(stderr, "Invalid velocity range: %d [-2049, 2049]\n", velocity);
                     return;
                 }
-                if (opts.motors[motor_index].direction_right)
+                if (opts.motors[motor_index].direction_right){
                     motors[motor_index].command_rotateRight(velocity, TIMEOUT_MS);
-                else
+                    current_movement[motor_index] = velocity;
+                } else {
                     motors[motor_index].command_rotateLeft(velocity, TIMEOUT_MS);
+                    current_movement[motor_index] = -velocity;
+                }
 
             }
 
@@ -271,6 +373,8 @@ int set_motor_msr(int motor, int msr)
 
 int init_motor(int motor)
 {
+    current_movement[motor] = 0;
+
 #if INTERPOLATION == 1 && STEPSIZE_RESOLUTION == 4
         printf("interpolation = %d\n", INTERPOLATION);
         if (MobSpkr::Motor::Response::Status::Success != motors[motor].command_setAxisParam_Interpolation(1, TIMEOUT_MS)){
@@ -440,10 +544,10 @@ int main(int argc, char * argv[])
         }
         printf("Connected using address %d\n", motors[i].get_address());
 
-	if (init_motor(i))
+        if (init_motor(i))
             return EXIT_FAILURE;
 
-	if (set_motor_msr(i, STEPSIZE_RESOLUTION))
+        if (set_motor_msr(i, STEPSIZE_RESOLUTION))
             return EXIT_FAILURE;
 
     }
