@@ -211,6 +211,11 @@ protected:
 
                 int32_t pos_target = 0;
 
+                if (current_angle == desired_angled){
+                    fprintf(stderr, "not moving, already at angle\n");
+                    return;
+                }
+
                 // if rotating "right" position increments, thus we go for the next bigger possible position, otherwise the next smaller one
                 // treat not-rotating as right-rotation
                 if (current_movement[motor_index] >= 0){
@@ -236,9 +241,31 @@ protected:
                 fprintf(stderr, "moving to absolute pos %d\n", pos_target);
 
                 motors[motor_index].command_moveToPosition(pos_target, MobSpkr::Motor::MovementType_Absolute, 0, TIMEOUT_MS);
+
+                current_movement[motor_index] = 0;
             }
 
+            if (std::strcmp( m.AddressPattern(), "/motor/move-to-position") == 0) {
 
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                int pos = (arg++)->AsInt32();
+                if (arg != m.ArgumentsEnd())
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index) {
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+
+                if (pos < -2147483648 || 2147483647 < pos) {
+                    fprintf(stderr, "Invalid position: %d [-2147483648, 2147483647]\n", pos);
+                    return;
+                }
+
+                fprintf(stderr, "move to position: %d\n", pos);
+                motors[motor_index].command_moveToPosition(pos, MobSpkr::Motor::MovementType_Absolute, 0, TIMEOUT_MS);
+            }
 
             if (std::strcmp( m.AddressPattern(), "/motor/rotate") == 0){
 
@@ -283,10 +310,35 @@ protected:
                     return;
                 }
 
-		        fprintf(stderr, "setting motor %d msr = %d\n", motor_index, msr);
+                fprintf(stderr, "setting motor %d msr = %d\n", motor_index, msr);
                 if (set_motor_msr(motor_index, msr))
                     fprintf(stderr, "failed\n");
             }
+
+
+            if (std::strcmp(m.AddressPattern(), "/motor/standby-current") == 0){
+
+                osc::ReceivedMessage::const_iterator arg = m.ArgumentsBegin();
+                int motor_index = (arg++)->AsInt32();
+                int value = (arg++)->AsInt32();
+                if( arg != m.ArgumentsEnd() )
+                    throw osc::ExcessArgumentException();
+
+                if (motor_index < 0 || motor_count <= motor_index){
+                    fprintf(stderr, "Invalid motor index: %d (0 - %d)\n", motor_index, motor_count - 1);
+                    return;
+                }
+                if (value < 0 || 255 < value){
+                    fprintf(stderr, "Invalid standby current: %d [0, 255]\n", value);
+                    return;
+                }
+
+                fprintf(stderr, "setting standby current (motor %d) := %d\n", motor_index, value);
+                if (motors[motor_index].command_setAxisParam_StandbyCurrent(value, TIMEOUT_MS))
+                    fprintf(stderr, "failed\n");
+            }
+
+
 
 
             if (std::strcmp(m.AddressPattern(), "/motor/temp") == 0) {

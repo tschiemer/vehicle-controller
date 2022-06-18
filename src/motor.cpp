@@ -156,6 +156,10 @@ namespace MobSpkr {
         return execute_with_value(MobSpkr::PD_1160::SetAxisParam_MaxCurrent, value, NULL, 1000);
     }
 
+    Motor::Response::Status Motor::command_setAxisParam_StandbyCurrent(uint32_t value, unsigned int timeout_ms){
+        return execute_with_value(MobSpkr::PD_1160::SetAxisParam_StandbyCurrent, value, NULL, 1000);
+    }
+
     Motor::Response::Status Motor::command_setAxisParam_PowerDownDelay(uint32_t value, unsigned int timeout_ms){
         return execute_with_value(MobSpkr::PD_1160::SetAxisParam_PowerDownDelay, value, NULL, 1000) ;
     }

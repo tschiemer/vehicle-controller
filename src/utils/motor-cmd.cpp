@@ -23,6 +23,7 @@ static void print_usage(FILE * out){
             "\t --pos [<pos>]\t Get/Set actual position (motor must be stopped)\n"
             "\t --move-to <pos>\t Move to absolute position\n"
             "\t --move-by <pos>\t Move to relative position\n"
+            "\t --standby-current <cur>\t Set standby current\n"
             "Examples:\n"
             "%s -s/dev/cu.usbmodemTMCSTEP1 --msr --msr=7 --msr\n",
             argv0, argv0);
@@ -61,6 +62,7 @@ int main(int argc, char * argv[]){
                 {"move-to", required_argument, 0, 7},
                 {"move-by", required_argument, 0, 8},
                 {"stop", no_argument, 0, 'q'},
+                {"standby-current", required_argument, 0, 9},
                 {0,         0,                 0,  0 }
         };
 
@@ -308,6 +310,28 @@ int main(int argc, char * argv[]){
                 }
                 printf("Moving by relative position %d ", pos);
                 MobSpkr::Motor::Response::Status status = motor.command_moveToPosition(pos, MobSpkr::Motor::MovementType_Relative, 0, timeout_ms);
+                if (status != MobSpkr::Motor::Response::Status::Success)
+                    printf("FAILED\n");
+                else
+                    printf("OK\n");
+
+                break;
+            }
+
+            case 9: { // --standby-current
+
+                if (!motor.is_open()){
+                    fprintf(stderr, "Command before was connected to motor!\n");
+                    goto fail;
+                }
+
+                int32_t value = std::atoi(optarg);
+                if (value < 0 || 255 < value){
+                    fprintf(stderr, "Invalid standby current (must be in [0, 255]): %d\n", value);
+                    goto fail;
+                }
+                printf("Setting standby current %d ", value);
+                MobSpkr::Motor::Response::Status status = motor.command_setAxisParam_StandbyCurrent(value, timeout_ms);
                 if (status != MobSpkr::Motor::Response::Status::Success)
                     printf("FAILED\n");
                 else

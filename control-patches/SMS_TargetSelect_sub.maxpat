@@ -4,7 +4,7 @@
 		"appversion" : 		{
 			"major" : 8,
 			"minor" : 1,
-			"revision" : 11,
+			"revision" : 3,
 			"architecture" : "x64",
 			"modernui" : 1
 		}
@@ -37,7 +37,6 @@
 		"tags" : "",
 		"style" : "",
 		"subpatcher_template" : "",
-		"assistshowspatchername" : 0,
 		"boxes" : [ 			{
 				"box" : 				{
 					"id" : "obj-26",
@@ -426,7 +425,7 @@
 , 			{
 				"box" : 				{
 					"id" : "obj-4",
-					"items" : [ "Angela", "(AGGREGAT)", ",", "Roger", "(Rotation)", ",", "Giacometti", "(?)" ],
+					"items" : [ "Angela", "(AGGREGAT)", ",", "Roger", "(Rotation)", ",", "Elaine", "(Elevation)" ],
 					"maxclass" : "umenu",
 					"numinlets" : 1,
 					"numoutlets" : 3,
